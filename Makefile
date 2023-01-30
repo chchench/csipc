@@ -1,16 +1,11 @@
-all: clean test
+all: clean build
 
 build:
 	go mod tidy; go mod verify
-	go build -o server/server server/main.go
-	go build -o client/client client/main.go
-
-test: build
-	@echo "***** UNIT TESTS NOT YET PROVIDED *****"
-	server/server &
-	client/client &
+	go build -o client client.go
+	go build -o server-monitor server-monitor.go
 
 clean:
-	rm -f client/client server/server testtest *.log
+	rm -f client server-monitor
 
-.PHONY: all build test clean
+.PHONY: all build clean

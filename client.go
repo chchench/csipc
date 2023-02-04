@@ -5,14 +5,15 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"os"
 	"path"
 	"strings"
+	"time"
 )
 
 var (
 	pipename = flag.String("pipename", "IPC_NAMED_PIPE", "Name of IPC pipe")
-	monitor  = flag.Bool("monitor", false, "True to send data to monitor")
 )
 
 var ipc *IPC = &IPC{}
@@ -27,6 +28,13 @@ func main() {
 
 	log.Printf("Client ready to write to pipe named \"%s\" ...", ipc.fname)
 
+	for {
+		i := rand.Intn(32)
+		if err := ipc.sendInt(i); err != nil {
+			log.Printf("Unable to send number %d to monitor", i)
+		}
+		time.Sleep(2 * time.Second)
+	}
 }
 
 type IPC struct {

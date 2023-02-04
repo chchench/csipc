@@ -23,6 +23,8 @@ func dataStream() chan float64 {
 	return c
 }
 
+var total int
+
 func main() {
 
 	flag.Parse()
@@ -31,21 +33,21 @@ func main() {
 
 	log.Printf("Monitor starting up ...")
 
-	h := thist.NewHist(nil, "Retrieval Size Histogram - Log2(Size) = X", "fixed", 24, false)
+	h := thist.NewHist(nil, "Retrieval Size Histogram - Log2(Size) = X", "fixed", 32, false)
 	c := dataStream()
 
 	log.Printf("Monitor ready to read from pipe named \"%s\" ...", *pipename)
 
-	i := 0
+	total := 0
 	for {
 		v := <-c
 
 		h.Update(v)
-		if i%50 == 0 {
+		if total%50 == 0 {
 			fmt.Println(h.Draw())
 		}
 
-		i++
+		total++
 	}
 }
 
@@ -60,7 +62,9 @@ func installSigIntHandler() {
 }
 
 func cleanUp() {
+	log.Printf("A total of %d numbers were received\n", total)
 	os.Remove(*pipename)
+	os.Exit(1)
 }
 
 func runStreamReader(c chan float64) error {
@@ -80,14 +84,14 @@ func runStreamReader(c chan float64) error {
 
 	reader := bufio.NewReader(f)
 
-	var offset, len int
+	var value int
 
 	for {
 		line, err := reader.ReadBytes('\n')
 		if err == nil {
 
-			fmt.Sscanf(string(line), "RETR:%d:%d\n", &offset, &len)
-			c <- math.Ceil(math.Log2(float64(len)))
+			fmt.Sscanf(string(line), "%d\n", &value)
+			c <- math.Ceil(float64(value))
 		}
 	}
 

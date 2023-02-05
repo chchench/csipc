@@ -39,14 +39,14 @@ func main() {
 	log.Printf("Monitor ready to read from pipe named \"%s\" ...", *pipename)
 
 	total := 0
+	var v float64
 	for {
-		v := <-c
+		v = <-c
 
 		h.Update(v)
-		if total%50 == 0 {
+		if total%2 == 0 {
 			fmt.Println(h.Draw())
 		}
-
 		total++
 	}
 }
@@ -89,9 +89,10 @@ func runStreamReader(c chan float64) error {
 	for {
 		line, err := reader.ReadBytes('\n')
 		if err == nil {
-
-			fmt.Sscanf(string(line), "%d\n", &value)
-			c <- math.Ceil(float64(value))
+			str := string(line)
+			if _, err := fmt.Sscanf(str, "%d\n", &value); err == nil {
+				c <- math.Ceil(float64(value))
+			}
 		}
 	}
 

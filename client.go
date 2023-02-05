@@ -3,12 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"math/rand"
 	"os"
-	"path"
-	"strings"
 	"time"
 )
 
@@ -33,7 +30,7 @@ func main() {
 		if err := ipc.sendInt(i); err != nil {
 			log.Printf("Unable to send number %d to monitor", i)
 		}
-		time.Sleep(2 * time.Second)
+		time.Sleep(time.Millisecond * 500)
 	}
 }
 
@@ -59,40 +56,4 @@ func (ipc *IPC) sendInt(i int) error {
 	}
 
 	return nil
-}
-
-func gatherFilePaths(p string) []string {
-
-	var fileList []string
-
-	fileInfo, err := os.Stat(p)
-	if err != nil {
-		log.Fatalf("The path %s does not appear to be a valid one.", p)
-	}
-
-	if fileInfo.IsDir() {
-		files, err := ioutil.ReadDir(p)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		for _, f := range files {
-			if strings.HasPrefix(f.Name(), ".") {
-				continue
-			}
-
-			filePath := path.Join(p, f.Name())
-
-			fileInfo, err := os.Stat(filePath)
-			if err != nil || fileInfo.IsDir() {
-				continue
-			}
-
-			fileList = append(fileList, filePath)
-		}
-	} else {
-		fileList = append(fileList, p)
-	}
-
-	return fileList
 }
